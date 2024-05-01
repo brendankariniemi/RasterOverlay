@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>File Edit</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='edit.css') }}">
+    <script src="https://unpkg.com/konva@9.3.3/konva.min.js"></script>
+</head>
+
+<body>
+<div id="canvasContainer">
+    <canvas id="myCanvas">
+        <img id="image-display" src="" alt="Image" data-image-url="{{ data }}">
+    </canvas>
+</div>
+<div class='button-and-checkbox-container'>
+    <label class="checkbox-label">
+        <input type="checkbox" id="split-checkbox">
+        Split Image
+    </label>
+    <button class='submit-btn'>Submit</button>
+</div>
+
+<script>
+    $(document).ready(function () {
+        var canvas = document.getElementById('myCanvas');
+        var ctx = canvas.getContext('2d');
+        var container = document.getElementById('canvasContainer'); // Container for the canvas
+        var imgElement = document.getElementById('image-display');
+        var imgSrc = imgElement.getAttribute('data-image-url');
+
+        // Function to replace the image source
+        function replaceImage(image) {
+            var cache_param = '?cache=' + Date.now();
+            image = image + cache_param;
+            img.src = image;
+        }
+
+        // Load your image
+        var img = new Image();
+        img.onload = function() {
+            canvas.width = this.width;
+            canvas.height = this.height;
+            ctx.drawImage(img, 0, 0);
+        };
+        img.src = imgSrc;
+
+        // Handle click events on the canvas
+        canvas.addEventListener('click', function(event) {
+            var rect = canvas.getBoundingClientRect();
+            var x = event.clientX - rect.left;
+            var y = event.clientY - rect.top;
+
+            var filename = imgSrc.split('/').pop();
+
+            $.ajax({
+                type: 'POST',
+                url: '/process_click',
+                contentType: 'application/json',
+                data: JSON.stringify({ 'x': x, 'y': y, 'filename': filename }),
+                success: function(data) {
+                    replaceImage(data.image_url)
+                },
+                error: function(xhr, status, error) {
+                    console.error("Failed to send click data:", error);
+                }
+            });
+        });
+
+        // Event handler for the submit button, attached directly to avoid multiple bindings
+        $('.submit-btn').on('click', function () {
+            var filename = imgSrc.split('/').pop();
+            var split = $('#split-checkbox').is(':checked');
+
+            $.ajax({
+                type: 'POST',
+                url: '/process_submit',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    'filename': filename,
+                    'split': split
+                }),
+                success: function(data) {
+                    var imageUrls = data.image_urls;
+                    window.location.href = '/display?data=' + encodeURIComponent(imageUrls);
+                },
+                error: function(xhr, status, error) {
+                    console.error("Failed to send submit data:", error);
+                }
+            });
+        });
+    });
+</script>
+
+<!--
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var canvas = document.getElementById('myCanvas');
+        var ctx = canvas.getContext('2d');
+        var container = document.getElementById('canvasContainer'); // Container for the canvas
+        var imgElement = document.getElementById('image-display');
+        var imgSrc = imgElement.getAttribute('data-image-url');
+
+        // Load your image
+        var img = new Image();
+        img.onload = function() {
+            canvas.width = this.width;
+            canvas.height = this.height;
+            ctx.drawImage(img, 0, 0);
+        };
+        img.src = imgSrc;
+
+        // Handle click events on the canvas
+        canvas.addEventListener('click', function(event) {
+            var rect = canvas.getBoundingClientRect();
+            var x = event.clientX - rect.left;
+            var y = event.clientY - rect.top;
+            x += canvas.scrollLeft;
+            y += canvas.scrollTop;
+            var filename = imgSrc.split('/').pop();
+
+            $(document).ready(function () {
+                function replaceImage(image) {
+                    var cache_param = '?cache=' + Date.now()
+                    image = image + cache_param;
+                    img.src = image;
+                }
+
+                var initialImageUrl = $('#image-display').data('image-url');
+                if (initialImageUrl) {
+                    replaceImage(initialImageUrl);
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/process_click',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ 'x': x, 'y': y, 'filename': filename }),
+                    success: function(data) {
+                        replaceImage(data.image_url)
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Failed to send click data:", error);
+                    }
+                });
+
+                function navigateToDisplay(imageUrls) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/navigate',
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            dest: 'display',
+                            page_data: imageUrls
+                        }),
+                        success: function () {
+                            window.location.href = '/display?data=' + encodeURIComponent(imageUrls);
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("Navigation failed:", error);
+                        }
+                    });
+                }
+
+                $('.submit-btn').click(function () {
+                    var filename = imgSrc.split('/').pop();
+                    var split = $('#split-checkbox').is(':checked');
+
+                    console.log(filename)
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '/process_submit',
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            'filename': filename,
+                            'split': split
+                        }),
+                        success: function(data) {
+                            navigateToDisplay(data.image_urls);
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("Failed to send submit data:", error);
+                        }
+                    });
+                });
+            });
+        });
+    });
+</script>
+-->
+
+</body>
+</html>

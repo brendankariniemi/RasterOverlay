@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<header class="main-header">
+        <h1>Raster Overlay Trimmer</h1>
+</header>
+<div class='file-uploader'>
+    <div class='parent-container'>
+        <div class='upload-container'>
+            <div class="back-button-parent">
+                <button class='back-button' id="back-arrow" style="display:none;">← Back</button>
+            </div>
+            <div class='file-upload-component'>
+                <div class='file-drop-area'>
+                    <img class='uploadIcon' src="{{ url_for('static', filename='images/uploadIcon.png') }}" alt="Upload Icon">
+                    <span class='file-msg'>Drag and Drop Here</span>
+                    <span class='file-msg'> --- OR ---</span>
+                    <form id="upload-form" method="POST" enctype="multipart/form-data" action="/process_upload">
+                        <input type="file" id="file-input" name="file" accept="application/pdf" style="display: none;" onchange="$('#upload-form').submit()">
+                        <input type="file" id="directory-input" name="files" webkitdirectory directory multiple style="display: none;" onchange="$('#upload-form').submit()">
+                        <div class='button-container'>
+                            <span class='fake-btn' data-type="file">Browse Files</span>
+                            <span class='fake-btn' data-type="directory">Browse Directories</span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function () {
+
+    function navigateToEdit(imageUrl) {
+        $.ajax({
+            type: 'POST',
+            url: '/navigate',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                dest: 'edit',
+                page_data: imageUrl
+            }),
+            success: function () {
+                window.location.href = '/edit?data=' + encodeURIComponent(imageUrl);
+            },
+            error: function(xhr, status, error) {
+                console.error("Navigation failed:", error);
+            }
+        });
+    }
+
+    function uploadPDF(form_data) {
+        $.ajax({
+            type: 'POST',
+            url: '/process_upload',
+            data: form_data,
+            processData: false,
+            contentType: false,
+            success: function (data) {
+                navigateToEdit(data.image_url);
+            },
+            error: function(xhr, status, error) {
+                console.error("Upload failed:", error);
+            }
+        });
+    }
+
+    function uploadDir(form_data) {
+        $.ajax({
+            type: 'POST',
+            url: '/process_directory_upload',
+            data: form_data,
+            processData: false,
+            contentType: false,
+            success: function (data) {
+                // OPEN UP THE IMAGES DIR
+                console.log("Success!")
+            },
+            error: function(xhr, status, error) {
+                console.error("Upload failed:", error);
+            }
+        });
+    }
+
+    $('.fake-btn').click(function () {
+        var type = $(this).data('type');
+        if (type === 'file') {
+            $('#file-input').click();
+        } else if (type === 'directory') {
+            $('#directory-input').click();
+        }
+    });
+
+    // Handle form submission
+    $('#upload-form').submit(function (event) {
+        event.preventDefault();
+        var form_data = new FormData(this);
+        uploadPDF(form_data);
+    });
+
+    $('#directory-input').change(function (event) {
+        var form_data = new FormData();
+        var files = event.target.files;
+        for (var i = 0; i < files.length; i++) {
+            form_data.append('files[]', files[i]);
+        }
+        uploadDir(form_data);
+    });
+});
+</script>
+
+</body>
+</html>

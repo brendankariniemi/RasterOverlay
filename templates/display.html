@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: white;
+        }
+
+        #images-container {
+            width: 95%;
+            margin: auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            overflow: hidden;
+            transition: all 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div id="images-container">
+        <!-- Images will be added dynamically here -->
+    </div>
+
+    <script>
+        const initialData = '{{ data }}'.split(',');
+
+        function displayFinalImages(imageUrls) {
+            console.log(imageUrls)
+            const imagesContainer = document.getElementById('images-container');
+
+            // Clear the container
+            imagesContainer.innerHTML = '';
+
+            // Apply styles to the container
+            imagesContainer.style.display = 'grid';
+            imagesContainer.style.gridTemplateColumns = 'repeat(auto-fit, minmax(250px, 1fr))';
+            imagesContainer.style.gap = '10px';
+            imagesContainer.style.padding = '10px';
+            imagesContainer.style.backgroundColor = "rgb(218, 230, 230)";
+
+            // Add images to the container
+            imageUrls.forEach(url => {
+                const imageWrapper = document.createElement('div');
+                imageWrapper.style.overflow = 'hidden';
+
+                const imgElement = document.createElement('img');
+                imgElement.src = url;
+                imgElement.style.width = '100%';
+                imgElement.style.height = 'auto';
+                imgElement.style.display = 'block';
+
+                imageWrapper.appendChild(imgElement);
+                imagesContainer.appendChild(imageWrapper);
+            });
+        }
+
+        displayFinalImages(initialData);
+    </script>
+</body>
+</html>

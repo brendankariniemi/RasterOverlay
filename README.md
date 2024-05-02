@@ -27,7 +27,6 @@ App prototype showcasing conversion of PDF plans to PNG versions where white spa
 - `pip install -r requirements.txt`
 - `flask run`
 
-
 ## Judging Feedback
 **What went well:**
 -   Completed the hackathon checklist
@@ -42,6 +41,9 @@ App prototype showcasing conversion of PDF plans to PNG versions where white spa
     -   Island splitting into separate files supports multi-page / multi-level PDFs really well
     -   Implemented both frontend and backend
     -   Folder selection
+
+## Demo
+https://github.com/brendankariniemi/RasterOverlay/assets/138073658/33e38aad-f565-4d77-9064-6c8e74f6a25e
 
 
 ## Culture Index Survey
